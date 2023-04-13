@@ -1,9 +1,19 @@
 """Entry point for billing program."""
-from typing import Union
-
 from fastapi import FastAPI
-
+from pydantic import BaseModel
 import pandas
+
+
+class DebtItem(BaseModel):
+    """Model for API request body."""
+
+    name: str
+    governmentId: int
+    email: str
+    debtAmount: float
+    debtDueDate: str
+    debtId: int
+
 
 app = FastAPI()
 
@@ -15,7 +25,7 @@ def read_root():
 
 
 @app.get("/items/{item_id}")
-def read_item(item_id: str, q: Union[str, None] = None):
+def read_item(item_id: str, q: str | None = None):
     """
     Test endpoint with argument.
 
@@ -36,3 +46,12 @@ def read_csv():
     """
     df = pandas.read_csv("test-input.csv").T.to_dict()
     return df
+
+
+@app.post("/json")
+def read_json(item: DebtItem):
+    """Test pydantic's BaseModel.
+
+    Expect to use BaseModel to process CSV request body later.
+    """
+    return item
