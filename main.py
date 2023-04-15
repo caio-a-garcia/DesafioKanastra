@@ -23,7 +23,6 @@ def billing(item: UploadFile):
     values = pandas.read_csv(item.file).T.to_dict()
 
     if not all(key in values[0] for key in expected_keys):
-        # print(key for key in expected_keys)
         raise HTTPException(
             status_code=422,
             detail="Request does not have all expected fields.")
@@ -50,8 +49,6 @@ def billing(item: UploadFile):
 def check_bills():
     """Return all bills."""
     debt_items = db["debt_items"]
-
-    print(debt_items)
 
     return debt_items
 
@@ -85,8 +82,6 @@ def payment(item: PaymentItem):
     db["payment_items"].append(item)
 
     payment_processed = process_payment(item)
-
-    print(payment_processed)
 
     if not payment_processed:
         raise HTTPException(status_code=404,
