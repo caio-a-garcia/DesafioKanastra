@@ -1,22 +1,13 @@
 """Entry point for billing program."""
-from fastapi import FastAPI, UploadFile
-from pydantic import BaseModel
+from fastapi import FastAPI, UploadFile, Response, HTTPException
 import pandas
-
-
-class DebtItem(BaseModel):
-    """Model for API request body."""
-
-    name: str
-    governmentId: int
-    email: str
-    debtAmount: float
-    debtDueDate: str
-    debtId: int
+from model import DebtItem
 
 
 app = FastAPI()
 
+db = {"debt_items": [],
+      "payment_items": []}
 
 @app.post("/csv")
 def read_csv(item: UploadFile):
