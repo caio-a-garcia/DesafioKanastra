@@ -1,7 +1,7 @@
 """Entry point for billing program."""
-from fastapi import FastAPI, UploadFile, Response, HTTPException
+from fastapi import FastAPI, UploadFile, HTTPException
 import pandas
-from model import DebtItem
+from model import DebtItem, PaymentItem
 
 
 app = FastAPI()
@@ -11,15 +11,10 @@ db = {"debt_items": [],
 
 
 @app.post("/billing", status_code=202)
-def read_csv(item: UploadFile, response: Response):
-    """
-    Get file as request body.
-
-    Takes a file in the request body and returns its type.
-    Expects a CSV, but no checks just yet.
-    """
-    expected_keys = ('name', 'governmentId', 'email',
-                     'debtAmount', 'debtDueDate', 'debtId')
+def billing(item: UploadFile):
+    """Register a new debt."""
+    expected_keys = ("name", "governmentId", "email",
+                     "debtAmount", "debtDueDate", "debtId")
 
     if item.content_type != "text/csv":
         raise HTTPException(status_code=415,
@@ -33,12 +28,12 @@ def read_csv(item: UploadFile, response: Response):
             status_code=422,
             detail="Request does not have all expected fields.")
 
-    item = DebtItem(name=values[0]['name'],
-                    governmentId=values[0]['governmentId'],
-                    email=values[0]['email'],
-                    debtAmount=values[0]['debtAmount'],
-                    debtDueDate=values[0]['debtDueDate'],
-                    debtId=values[0]['debtId'])
+    item = DebtItem(name=values[0]["name"],
+                    governmentId=values[0]["governmentId"],
+                    email=values[0]["email"],
+                    debtAmount=values[0]["debtAmount"],
+                    debtDueDate=values[0]["debtDueDate"],
+                    debtId=values[0]["debtId"])
 
     # Reject items with repeated ids.
     if item in db["debt_items"]:
@@ -46,7 +41,7 @@ def read_csv(item: UploadFile, response: Response):
             status_code=409,
             detail="Id already exists in db.")
 
-    db['debt_items'].append(item)
+    db["debt_items"].append(item)
 
     return item
 
@@ -61,11 +56,38 @@ def check_bills():
     return debt_items
 
 
-@app.post("/json")
-def read_json(item: DebtItem):
-    """
-    Test pydantic's BaseModel.
+def process_payment(item):
+    """Deduces payment amount from appropriate debt."""
+    for debt in db["debt_items"]:
+        if debt.debtId == int(item.debtId):
+            debt.amountDue = debt.amountDue - item.paidAmount
+            item.processed = True
+            if debt.amountDue <= 0.0:
+                debt.paid = True
+            return True
 
-    Expect to use BaseModel to process CSV request body later.
+    return False
+
+
+@app.post("/payment", status_code=201)
+def payment(item: PaymentItem):
+    """Take a payment and process it against registered debts.
+
+    Processing happen in process_payment.
     """
-    return item
+    expected_keys = ("debtId", "paidAt", "paidAmount", "paidBy")
+
+    if not all(key in item.json() for key in expected_keys):
+        raise HTTPException(
+            status_code=422,
+            detail="Request does not have all expected fields.")
+
+    db["payment_items"].append(item)
+
+    payment_processed = process_payment(item)
+
+    print(payment_processed)
+
+    if not payment_processed:
+        raise HTTPException(status_code=404,
+                            detail="Debt with given id not found.")

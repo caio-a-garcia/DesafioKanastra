@@ -57,6 +57,7 @@ class PaymentItem(BaseModel):
     paidAt: str
     paidAmount: float
     paidBy: str
+    processed: bool = False
 
     def __init__(self, debtId, paidAt, paidAmount, paidBy):
         """Register a payment to be processed."""
