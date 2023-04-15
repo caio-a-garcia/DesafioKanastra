@@ -2,12 +2,10 @@
 from fastapi import FastAPI, UploadFile, HTTPException
 import pandas
 from model import DebtItem, PaymentItem
+from state import db
 
 
 app = FastAPI()
-
-db = {"debt_items": [],
-      "payment_items": []}
 
 
 @app.post("/billing", status_code=202)
@@ -86,3 +84,5 @@ def payment(item: PaymentItem):
     if not payment_processed:
         raise HTTPException(status_code=404,
                             detail="Debt with given id not found.")
+
+    return item
