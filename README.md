@@ -14,8 +14,15 @@ Install dependencies:
 `pip install -r requirements.txt`
 
 ### Running Project
-With environment activated, run (Windows):
+Commands in this section should be run with environment activated.
+
+The server exposes endpoints for billing and payment.
+To start the server run (Windows):
 `start-server`
+
+The scheduler checks for standing debts, and simulates the generation of invoices and sending of email. It is configured to run this task every 6 hours.
+To start the scheduler run (Windows):
+`scheduler`
 
 For running tests:
 `pytest`

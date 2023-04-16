@@ -1,7 +1,13 @@
 """Initialize application state."""
 from app.model import DebtItem
 
-db = {"debt_items": [],
+db = {"debt_items": [DebtItem(name="John Doe",
+                              governmentId=11111111,
+                              email="johndoe@kanastra.com.br",
+                              debtAmount=50000.00,
+                              debtDueDate="2023-04-20",
+                              debtId=1001)
+                     ],
       "payment_items": []}
 
 
