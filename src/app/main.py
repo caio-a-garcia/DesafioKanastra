@@ -1,8 +1,8 @@
 """Entry point for billing program."""
 from fastapi import FastAPI, UploadFile, HTTPException
 import pandas
-from model import DebtItem, PaymentItem
-from state import db
+from app.model import DebtItem, PaymentItem
+from app.state import db, process_payment
 
 
 app = FastAPI()
@@ -51,17 +51,12 @@ def check_bills():
     return debt_items
 
 
-def process_payment(item):
-    """Deduces payment amount from appropriate debt."""
-    for debt in db["debt_items"]:
-        if debt.debtId == int(item.debtId):
-            debt.amountDue = debt.amountDue - item.paidAmount
-            item.processed = True
-            if debt.amountDue <= 0.0:
-                debt.paid = True
-            return True
+@app.get("/check-payments")
+def check_payments():
+    """Return all payments."""
+    debt_items = db["payment_items"]
 
-    return False
+    return debt_items
 
 
 @app.post("/payment", status_code=201)
