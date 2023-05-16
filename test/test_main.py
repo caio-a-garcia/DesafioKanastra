@@ -32,18 +32,6 @@ def test_payment_no_debt():
     reset_db()
 
 
-# def test_billing_valid():
-#     reset_db()
-#     print(db)
-#     with open("./src/test-input.csv", "rb") as file:
-#         # print("test_input: " + str(test_input))
-#         response = client.post(
-#             "/billing",
-#             files={"file": UploadFile(file)}
-#         )
-#         assert response.status_code == 202
-
-
 def test_payment_with_debt():
     set_db_with_mock_data()
 
